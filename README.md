@@ -5,7 +5,8 @@ A Node.js application to capture solar production data from local Enphase Envoy 
 ## Features
 -   Auto-discovery of Envoy Serial via local API.
 -   Authentication handling (Enlighten login -> Local Token).
--   InfluxDB 2.x support.
+-   InfluxDB 2.x support with startup health check.
+-   Timestamped logging for easier debugging.
 -   Dockerized with `dotenvx` for secure environment variable management.
 
 ## Prerequisites
@@ -47,3 +48,10 @@ npm install
 # Set env vars in .env
 npm start
 ```
+
+### Project Structure
+- `app.js`: Main entry point and orchestration.
+- `config.js`: Configuration management and validation.
+- `enphase.js`: Enphase Envoy authentication and data polling.
+- `influx.js`: InfluxDB connection handling and data writing.
+
