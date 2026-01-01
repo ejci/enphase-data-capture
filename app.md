@@ -14,7 +14,7 @@ The end goal is to have all data in influxdb that then will be visualized with g
 - Application should utilize the Enphase local envoy API to pull data (see bellow)
 - If influxdb is not available at start or any of the env variables is not set, application should exit with error
 
-##Logging locally anf gathering data from Enphase envoy
+##Logging locally and gathering data from Enphase envoy
 1. Get serial number from https://IP_ADDRESS/info. It produces XML and the serial number is under  envoy_info.device.sn
 2. Pull the token based on the serial number and username and password. User name and password will be stored in environment variables
 ```python
