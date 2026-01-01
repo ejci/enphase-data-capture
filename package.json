@@ -1,0 +1,23 @@
+{
+  "name": "enphase-data-capture",
+  "version": "1.0.0",
+  "description": "Capture data from Enphase Envoy and push to InfluxDB",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "keywords": [
+    "enphase",
+    "influxdb",
+    "solar",
+    "energy"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@influxdata/influxdb-client": "^1.33.0",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "xml2js": "^0.6.2"
+  }
+}
