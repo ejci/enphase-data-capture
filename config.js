@@ -12,11 +12,11 @@ const CONFIG = {
     // For now we map it to the same bucket or just don't use it if not in env, 
     // but the reference repo used a specific CONFIG structure.
     // We will stick to the existing env vars but export them cleanly.
-    POLL_INTERVAL: parseInt(process.env.POLL_INTERVAL || '60000', 10)
+    ENPHASE_POLL_INTERVAL: parseInt(process.env.ENPHASE_POLL_INTERVAL || '60000', 10)
 };
 
 // Validate Config
-const missingVars = Object.entries(CONFIG).filter(([key, val]) => !val && key !== 'POLL_INTERVAL').map(([key]) => key);
+const missingVars = Object.entries(CONFIG).filter(([key, val]) => !val && key !== 'ENPHASE_POLL_INTERVAL').map(([key]) => key);
 if (missingVars.length > 0) {
     console.error(`ERROR: Missing environment variables: ${missingVars.join(', ')}`);
     process.exit(1);

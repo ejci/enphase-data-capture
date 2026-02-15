@@ -43,7 +43,7 @@ async function main() {
     await pollData();
 
     // Schedule
-    setInterval(pollData, CONFIG.POLL_INTERVAL);
+    setInterval(pollData, CONFIG.ENPHASE_POLL_INTERVAL);
 }
 
 main();
