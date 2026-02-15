@@ -1,6 +1,6 @@
 {
   "name": "enphase-data-capture",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Capture data from Enphase Envoy and push to InfluxDB",
   "main": "app.js",
   "scripts": {
