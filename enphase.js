@@ -2,6 +2,7 @@ const fs = require('fs');
 const https = require('https');
 const axios = require('axios');
 const xml2js = require('xml2js');
+const logger = require('./logger');
 const CONFIG = require('./config');
 
 // Global State
@@ -25,18 +26,18 @@ async function getValidToken() {
             // Check if valid against Envoy
             const isValid = await checkTokenValidity(tokenData);
             if (isValid) {
-                console.log('Using existing valid token.');
+                logger.info('Using existing valid token');
                 return tokenData;
             } else {
-                console.log('Existing token invalid or expired.');
+                logger.warn('Existing token invalid or expired');
             }
         } catch (err) {
-            console.error('Error reading/parsing token file:', err.message);
+            logger.error({ err: err.message }, 'Error reading/parsing token file');
         }
     }
 
     // 2. Login and get new token
-    console.log('Acquiring new token...');
+    logger.info('Acquiring new token...');
     const newToken = await acquireNewToken();
     fs.writeFileSync(TOKEN_FILE, JSON.stringify(newToken));
     return newToken;
@@ -69,7 +70,7 @@ async function getEnvoySerial() {
 async function acquireNewToken() {
     if (!envoySerial) {
         envoySerial = await getEnvoySerial();
-        console.log(`Discovered Envoy Serial: ${envoySerial}`);
+        logger.info({ envoySerial }, 'Discovered Envoy serial number');
     }
 
     // 1. Login to Enlighten
@@ -77,7 +78,7 @@ async function acquireNewToken() {
     loginData.append('user[email]', CONFIG.ENPHASE_USER);
     loginData.append('user[password]', CONFIG.ENPHASE_PASSWORD);
 
-    console.log('Logging in to Enphase Enlighten...');
+    logger.info('Logging in to Enphase Enlighten...');
     const loginResponse = await axios.post('https://enlighten.enphaseenergy.com/login/login.json?', loginData);
     const responseData = loginResponse.data;
 
@@ -92,7 +93,7 @@ async function acquireNewToken() {
         username: CONFIG.ENPHASE_USER
     };
 
-    console.log('Requesting token from Entrez...');
+    logger.info('Requesting token from Entrez...');
     const tokenResponse = await axios.post('https://entrez.enphaseenergy.com/tokens', tokenPayload);
     const token = tokenResponse.data;
 
@@ -123,7 +124,7 @@ async function getInverterData() {
     } catch (error) {
         // If 401, force token refresh next time
         if (error.response && error.response.status === 401) {
-            console.log('401 received, clearing token for next retry.');
+            logger.warn('401 received from Envoy, clearing token for next retry');
             sessionToken = null;
         }
         throw error;

@@ -1,3 +1,5 @@
+const logger = require('./logger');
+
 require('dotenv').config();
 
 const CONFIG = {
@@ -8,17 +10,17 @@ const CONFIG = {
     INFLUX_TOKEN: process.env.INFLUX_TOKEN,
     INFLUX_ORG: process.env.INFLUX_ORG,
     INFLUX_BUCKET: process.env.INFLUX_BUCKET,
-    // Add separate error bucket support if needed in future, matching reference style roughly
-    // For now we map it to the same bucket or just don't use it if not in env, 
-    // but the reference repo used a specific CONFIG structure.
-    // We will stick to the existing env vars but export them cleanly.
-    ENPHASE_POLL_INTERVAL: parseInt(process.env.ENPHASE_POLL_INTERVAL || '60000', 10)
+    ENPHASE_POLL_INTERVAL: parseInt(process.env.ENPHASE_POLL_INTERVAL || '60000', 10),
+    ENPHASE_LOG_LEVEL: process.env.ENPHASE_LOG_LEVEL || 'info'
 };
 
 // Validate Config
-const missingVars = Object.entries(CONFIG).filter(([key, val]) => !val && key !== 'ENPHASE_POLL_INTERVAL').map(([key]) => key);
+const missingVars = Object.entries(CONFIG)
+    .filter(([key, val]) => !val && key !== 'ENPHASE_POLL_INTERVAL' && key !== 'ENPHASE_LOG_LEVEL')
+    .map(([key]) => key);
+
 if (missingVars.length > 0) {
-    console.error(`ERROR: Missing environment variables: ${missingVars.join(', ')}`);
+    logger.error({ missingVars }, 'Missing required environment variables');
     process.exit(1);
 }
 

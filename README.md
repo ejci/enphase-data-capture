@@ -4,9 +4,9 @@ A Node.js application to capture solar production data from local Enphase Envoy 
 
 ## Features
 -   Auto-discovery of Envoy Serial via local API.
--   Authentication handling (Enlighten login -> Local Token).
+-   Authentication handling (Enlighten login → Local Token).
 -   InfluxDB 2.x support with startup health check.
--   Timestamped logging for easier debugging.
+-   Structured JSON logging (via [Pino](https://github.com/pinojs/pino)) — compatible with Grafana Loki.
 -   Dockerized with `dotenvx` for secure environment variable management.
 
 ## Prerequisites
@@ -20,9 +20,18 @@ Copy the example environment file:
 cp .env.example .env
 ```
 Edit `.env` and fill in your details:
--   `ENPHASE_USER` / `ENPHASE_PASSWORD`: Your Enlighten account login.
--   `ENVOY_IP`: Local IP address of your Envoy.
--   `INFLUX_*`: Your InfluxDB 2 details.
+
+| Variable | Description |
+|---|---|
+| `ENPHASE_USER` | Enlighten account email |
+| `ENPHASE_PASSWORD` | Enlighten account password |
+| `ENVOY_IP` | Local IP / mDNS hostname of your Envoy |
+| `INFLUX_URL` | InfluxDB base URL (e.g. `http://influxdb:8086`) |
+| `INFLUX_TOKEN` | InfluxDB API token |
+| `INFLUX_ORG` | InfluxDB organisation |
+| `INFLUX_BUCKET` | InfluxDB bucket for solar data |
+| `ENPHASE_POLL_INTERVAL` | Polling interval in ms (default: `60000`) |
+| `ENPHASE_LOG_LEVEL` | Log verbosity: `trace`/`debug`/`info`/`warn`/`error` (default: `info`) |
 
 ## Running with Docker
 
@@ -39,19 +48,29 @@ docker run -d \
   --restart unless-stopped \
   enphase-data-capture
 ```
-*Note: Depending on how you run strictly, you might need `--net host` if your Envoy is on a restricted VLAN or requires mdns discovery that docker bridge obscures, though direct IP works fine in bridge mode.*
+*Note: add `--net host` if your Envoy requires mDNS discovery that Docker bridge mode obscures.*
 
 ## Development
-To run locally without Docker:
 ```bash
 npm install
-# Set env vars in .env
+# configure .env
 npm start
+
+# human-readable log output during development
+node app.js | npx pino-pretty
 ```
 
-### Project Structure
-- `app.js`: Main entry point and orchestration.
-- `config.js`: Configuration management and validation.
-- `enphase.js`: Enphase Envoy authentication and data polling.
-- `influx.js`: InfluxDB connection handling and data writing.
+## Logging & Loki
+All logs are emitted as newline-delimited JSON to stdout:
+```json
+{"level":30,"time":"2026-02-21T14:51:18.985Z","service":"enphase-data-capture","msg":"Polling data..."}
+{"level":50,"time":"2026-02-21T14:51:18.987Z","service":"enphase-data-capture","context":"Polling Data","err":"...","msg":"Application error"}
+```
+Each line carries `"service": "enphase-data-capture"`, making it straightforward to create Loki label filters in Promtail/Alloy.
 
+## Project Structure
+- `app.js` — Main entry point and orchestration.
+- `config.js` — Configuration management and validation.
+- `logger.js` — Shared Pino logger instance.
+- `enphase.js` — Enphase Envoy authentication and data polling.
+- `influx.js` — InfluxDB connection handling and data writing.

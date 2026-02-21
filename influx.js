@@ -1,5 +1,6 @@
 const { InfluxDB, Point } = require('@influxdata/influxdb-client');
 const axios = require('axios');
+const logger = require('./logger');
 const CONFIG = require('./config');
 
 let writeApi;
@@ -11,24 +12,21 @@ if (CONFIG.INFLUX_URL) {
 
 async function checkConnection() {
     try {
-        console.log(`Checking InfluxDB health at ${CONFIG.INFLUX_URL}/health...`);
-        // Using axios for simple health check as per previous logic, 
-        // though client library has ping, the previous implementation used axios and worked well.
-        // We will stick to axios for the raw health endpoint check to be consistent with previous verification.
+        logger.info({ influxUrl: CONFIG.INFLUX_URL }, 'Checking InfluxDB health');
         const response = await axios.get(`${CONFIG.INFLUX_URL}/health`, {
             timeout: 5000
         });
 
         if (response.status === 200) {
-            console.log(`InfluxDB is available at ${CONFIG.INFLUX_URL}.`);
+            logger.info({ influxUrl: CONFIG.INFLUX_URL }, 'InfluxDB is available');
             return true;
         } else {
-            console.error(`WARNING: InfluxDB at ${CONFIG.INFLUX_URL} returned status ${response.status}.`);
+            logger.warn({ influxUrl: CONFIG.INFLUX_URL, status: response.status }, 'InfluxDB returned unexpected status');
             return false;
         }
 
     } catch (error) {
-        console.error(`WARNING: InfluxDB at ${CONFIG.INFLUX_URL} is not available: ${error.message}. Data will be buffered.`);
+        logger.warn({ influxUrl: CONFIG.INFLUX_URL, err: error.message }, 'InfluxDB is not available — data will be buffered');
         return false;
     }
 }
@@ -44,11 +42,10 @@ function writeMeasurement(inverterData) {
     });
 
     points.forEach(p => writeApi.writePoint(p));
-    // Flush happens automatically, but can differ based on library config. Default is valid.
 }
 
 function logError(context, error) {
-    console.error(`Error in ${context}:`, error.message || error);
+    logger.error({ context, err: error.message || String(error) }, 'Application error');
 
     if (writeApi) {
         const point = new Point('application_errors')

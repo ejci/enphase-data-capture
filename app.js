@@ -1,31 +1,20 @@
+const logger = require('./logger');
 const CONFIG = require('./config');
 const influx = require('./influx');
 const enphase = require('./enphase');
-
-// Override console methods to include timestamps
-const originalLog = console.log;
-const originalError = console.error;
-
-console.log = (...args) => {
-    originalLog(new Date().toISOString(), ...args);
-};
-
-console.error = (...args) => {
-    originalError(new Date().toISOString(), ...args);
-};
 
 /**
  * Main polling logic
  */
 async function pollData() {
     try {
-        console.log('Polling data...');
+        logger.info('Polling data...');
 
         const inverters = await enphase.getInverterData();
-        console.log(`Received data for ${inverters.length} inverters.`);
+        logger.info({ inverterCount: inverters.length }, 'Received inverter data');
 
         influx.writeMeasurement(inverters);
-        console.log('Data pushed to InfluxDB.');
+        logger.info('Data pushed to InfluxDB');
 
     } catch (error) {
         influx.logError('Polling Data', error);
@@ -34,7 +23,7 @@ async function pollData() {
 
 // Main Execution
 async function main() {
-    console.log('Starting Enphase Data Capture...');
+    logger.info('Starting Enphase Data Capture...');
 
     // Health Check
     await influx.checkConnection();
