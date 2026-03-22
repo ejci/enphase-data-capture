@@ -14,14 +14,25 @@ const CONFIG = {
     ENPHASE_LOG_LEVEL: process.env.ENPHASE_LOG_LEVEL || 'info'
 };
 
-// Validate Config
-const missingVars = Object.entries(CONFIG)
-    .filter(([key, val]) => !val && key !== 'ENPHASE_POLL_INTERVAL' && key !== 'ENPHASE_LOG_LEVEL')
-    .map(([key]) => key);
+/**
+ * Validates the loaded configuration object to ensure all required environment
+ * variables are present. If any are missing, it logs an error and exits the process.
+ * 
+ * @param {Object} configToValidate - The configuration object to validate.
+ * @returns {void}
+ */
+function validateConfig(configToValidate) {
+    const missingVars = Object.entries(configToValidate)
+        .filter(([key, val]) => !val && key !== 'ENPHASE_POLL_INTERVAL' && key !== 'ENPHASE_LOG_LEVEL')
+        .map(([key]) => key);
 
-if (missingVars.length > 0) {
-    logger.error({ missingVars }, 'Missing required environment variables');
-    process.exit(1);
+    if (missingVars.length > 0) {
+        logger.error({ missingVars }, 'Missing required environment variables');
+        process.exit(1);
+    }
 }
 
-module.exports = CONFIG;
+// Perform initial validation
+validateConfig(CONFIG);
+
+module.exports = { ...CONFIG, validateConfig };

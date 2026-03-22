@@ -56,6 +56,9 @@ npm install
 # configure .env
 npm start
 
+# run test suite
+npm test
+
 # human-readable log output during development
 node app.js | npx pino-pretty
 ```

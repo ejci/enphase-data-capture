@@ -1,10 +1,16 @@
 {
   "name": "enphase-data-capture",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Capture data from Enphase Envoy and push to InfluxDB",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "clearMocks": true,
+    "setupFiles": ["./jest.setup.js"]
   },
   "keywords": [
     "enphase",
@@ -20,5 +26,8 @@
     "dotenv": "^16.3.1",
     "pino": "^10.3.1",
     "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }

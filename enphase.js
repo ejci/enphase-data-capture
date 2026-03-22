@@ -18,6 +18,13 @@ const envoyClient = axios.create({
     timeout: 10000
 });
 
+/**
+ * Retrieves a valid authentication token.
+ * It first attempts to load from the local cache file (`enphase_token.json`).
+ * If valid, it returns the cached token. If invalid or missing, it acquires a new one.
+ * 
+ * @returns {Promise<string>} The valid session token.
+ */
 async function getValidToken() {
     // 1. Try to load from file
     if (fs.existsSync(TOKEN_FILE)) {
@@ -43,6 +50,12 @@ async function getValidToken() {
     return newToken;
 }
 
+/**
+ * Checks if a given token is still valid by querying the Envoy `/auth/check_jwt` endpoint.
+ * 
+ * @param {string} token - The token to check.
+ * @returns {Promise<boolean>} True if valid, false if expired or invalid.
+ */
 async function checkTokenValidity(token) {
     try {
         const response = await envoyClient.get(`https://${CONFIG.ENVOY_IP}/auth/check_jwt`, {
@@ -54,6 +67,11 @@ async function checkTokenValidity(token) {
     }
 }
 
+/**
+ * Discovers the locally connected Envoy and retrieves its serial number from the `/info` endpoint.
+ * 
+ * @returns {Promise<string>} The discovered Envoy serial number.
+ */
 async function getEnvoySerial() {
     try {
         const response = await envoyClient.get(`https://${CONFIG.ENVOY_IP}/info`);
@@ -67,6 +85,11 @@ async function getEnvoySerial() {
     }
 }
 
+/**
+ * Executes the full login flow to Enphase Enlighten to obtain a new Entrez session token.
+ * 
+ * @returns {Promise<string>} The newly acquired token.
+ */
 async function acquireNewToken() {
     if (!envoySerial) {
         envoySerial = await getEnvoySerial();
@@ -103,7 +126,10 @@ async function acquireNewToken() {
 }
 
 /**
- * Main exposed function to get production data
+ * Main function to get production data for all inverters from the local Envoy API.
+ * Ensures the session token is valid before making the request.
+ * 
+ * @returns {Promise<Array<Object>>} Array of inverter production data.
  */
 async function getInverterData() {
     if (!sessionToken) {
@@ -131,6 +157,22 @@ async function getInverterData() {
     }
 }
 
+/**
+ * Clears the internal state. Used primarily for testing.
+ * 
+ * @returns {void}
+ */
+function clearState() {
+    envoySerial = null;
+    sessionToken = null;
+}
+
 module.exports = {
-    getInverterData
+    getInverterData,
+    // Exported for unit tests:
+    clearState,
+    getValidToken,
+    checkTokenValidity,
+    getEnvoySerial,
+    acquireNewToken
 };

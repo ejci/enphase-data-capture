@@ -4,7 +4,12 @@ const influx = require('./influx');
 const enphase = require('./enphase');
 
 /**
- * Main polling logic
+ * Main polling workflow.
+ * 1. Retrieves inverter data from the Envoy API.
+ * 2. Writes the retrieved data to InfluxDB.
+ * 3. Catches and logs any errors encountered.
+ * 
+ * @returns {Promise<void>}
  */
 async function pollData() {
     try {
@@ -21,7 +26,13 @@ async function pollData() {
     }
 }
 
-// Main Execution
+/**
+ * Main execution entrypoint.
+ * Performs connection health checks, runs an initial poll,
+ * and sets up the recurring polling interval.
+ * 
+ * @returns {Promise<void>}
+ */
 async function main() {
     logger.info('Starting Enphase Data Capture...');
 
